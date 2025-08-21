@@ -12,7 +12,7 @@ namespace MiniHotel.Models
         public string FullName { get; set; }   // Họ tên đầy đủ
         public string Username { get; set; }   // Tài khoản đăng nhập
         public string PasswordHash { get; set; } // Mật khẩu (hiện tại lưu plain text, sau này hash)
-        public string Role { get; set; }       // RoleName từ bảng Roles
+        public int Role { get; set; }     
         public string Phone { get; set; }
         public string Email { get; set; }
         public string Status { get; set; }

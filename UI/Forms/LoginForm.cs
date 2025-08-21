@@ -1,5 +1,6 @@
 ﻿using MiniHotel.BLL;
 using MiniHotel.Models;
+using MiniHotel.Models.Responses;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,10 +18,12 @@ namespace MiniHotel.UI.Forms
     public partial class LoginForm : Form
     {
         private readonly AuthService _authService;
+        private readonly UserService _userService;
         public LoginForm()
         {
             InitializeComponent();
             _authService = new AuthService();
+            _userService = new UserService();
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -47,36 +50,51 @@ namespace MiniHotel.UI.Forms
         {
             string password = txtPassword.Text;
             string username = txtUsername.Text;
-            User user = _authService.Login(username, password);
+            LoginResult result = _authService.Login(txtUsername.Text, txtPassword.Text);
 
-            if (user != null)
+            if (result.Success)
             {
-                MessageBox.Show($"Xin chào {user.Username} ({user.Role})");
+                // Login thành công
+                MessageBox.Show($"Chào {result.User.FullName}, đăng nhập thành công!", "SUCCESS", MessageBoxButtons.OK, MessageBoxIcon.None);
                 this.Hide();
-                MainForm main = new MainForm();
-                main.Show();
+                MainForm mainForm = new MainForm();
+                mainForm.Show();
+                
             }
             else
             {
-                MessageBox.Show("Sai tài khoản hoặc mật khẩu!", "Lỗi đăng nhập",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // Login thất bại, hiển thị message
+                MessageBox.Show(result.Message);
             }
-            //string connStr = @"Server=DESKTOP-3UU5LVQ\SQLEXPRESS;Database=MiniHotel;Integrated Security=True;TrustServerCertificate=True;";
 
-            //try
+            //string password = "123";
+            //string username = "trong";
+            //string fullname = "Trần Trọng Thịnh";
+            //int role = 1;
+            //string phone = "0338515037";
+            //string email = "ttthinh2904@gmail.com";
+            //User user = new User
             //{
-            //    using (SqlConnection conn = new SqlConnection(connStr))
-            //    {
-            //        conn.Open();
-            //        MessageBox.Show("✅ Kết nối thành công tới DB HotelMini!", "Thông báo",
-            //                        MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //    }
-            //}
-            //catch (Exception ex)
+            //    Username = username,
+            //    FullName = fullname,
+            //    Email = email,
+            //    Phone = phone,
+            //    PasswordHash = password,
+            //    Role = role
+            //};
+
+            //var createUserResult = _userService.creatUser(user);
+            //if (createUserResult.Success)
             //{
-            //    MessageBox.Show("❌ Lỗi kết nối: " + ex.Message, "Lỗi",
-            //                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    MessageBox.Show($"Chào {fullname}, đăng nhập thành công!", createUserResult.Message, MessageBoxButtons.OK, MessageBoxIcon.None);
+            //    MainForm mainForm = new MainForm();
+            //    mainForm.Show();
             //}
+            //else
+            //{
+            //    MessageBox.Show($"{createUserResult.Message}");
+            //}
+
 
         }
     }

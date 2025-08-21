@@ -16,37 +16,69 @@ namespace MiniHotel.DAL
         {
             _connectionString = ConfigHelper.GetConnectionString();
         }
-        public User GetUser(string username, string password)
+        //public User Login(string username, string password)
+        //{
+        //    UserRepository userRepository = new UserRepository();
+        //    var user = userRepository.GetUserByUsername(username);
+        //    if (user == null)
+        //        throw new Exception("Username không tồn tại");
+
+        //    if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        //        throw new Exception("Password không đúng");
+
+        //    return user;
+        //}
+        public User GetUserByUsername(string username)
         {
-            User user = null;
-            using (SqlConnection conn = new SqlConnection(_connectionString)) 
-            { 
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
                 conn.Open();
-                string sqlString = @"SELECT u.UserID, u.Username, u.PasswordHash, r.RoleName
-                    FROM Users u
-                    INNER JOIN Roles r ON u.RoleID = r.RoleID
-                    WHERE u.Username = @Username AND u.PasswordHash = @Password
-                          AND u.Status = 'Active'";
-                SqlCommand sqlCommand = new SqlCommand(sqlString, conn);
-                sqlCommand.Parameters.AddWithValue("@Username", username);
-                sqlCommand.Parameters.AddWithValue("@Password", password);
+                string sql = @"SELECT u.UserID, u.Username, u.PasswordHash, u.RoleID, u.FullName
+                       FROM Users u
+                       WHERE u.Username = @Username";
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Username", username);
 
-                using (SqlDataReader reader = sqlCommand.ExecuteReader())
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    if (reader.Read())
+                    if (!reader.Read())
                     {
-                        user = new User
-                        {
-                            UserID = reader.GetInt32(0),
-                            Username = reader.GetString(1),
-                            PasswordHash = reader.GetString(2),
-                            Role = reader.GetString(3)
-
-                        };
+                        return null; // Username không tồn tại
                     }
-                 }
+
+                    return new User
+                    {
+                        UserID = reader.GetInt32(0),
+                        Username = reader.GetString(1),
+                        PasswordHash = reader.GetString(2),
+                        Role = reader.GetInt32(3),
+                        FullName = reader.GetString(4)
+                    };
+                }
             }
-            return user;
         }
+        public bool InsertUser(User user)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string sql = @"INSERT INTO Users (Username, PasswordHash, RoleID, FullName, Email, Phone)
+                           VALUES (@Username, @PasswordHash, @Role, @FullName, @Email, @Phone)";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Username", user.Username);
+                    cmd.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
+                    cmd.Parameters.AddWithValue("@Role", user.Role);
+                    cmd.Parameters.AddWithValue("@FullName", user.FullName);
+                    cmd.Parameters.AddWithValue("@Email", user.Email);
+                    cmd.Parameters.AddWithValue("@Phone", user.Phone);
+
+                    int rows = cmd.ExecuteNonQuery();
+                    return rows > 0;
+                }
+            }
+        }
+
     }
 }
